@@ -9,10 +9,40 @@ import {
     Text,
     TouchableOpacity,
     View,
+    Switch
 } from 'react-native';
-import { WebBrowser } from 'expo';
+import {
+    WebBrowser,
+    Svg
+} from 'expo';
+
+import { RoomList } from '../components/RoomList'
 // import { CheckBox } from 'react-native-elements';
 import { MonoText } from '../components/StyledText';
+
+const rooms = [
+    {name: 'Aspen', area: 'Kitchen', tv: true, phone: false, whiteBoard: true, seats: 24, zoom: true},
+    {name: 'Alma', area: 'Kitchen', tv: true, phone: false, whiteBoard: true, seats: 24, zoom: true},
+    {name: 'Basalt', area: 'Kitchen', tv: true, phone: true, whiteBoard: false, seats: 10, zoom: true},
+    {name: 'Breckenridge', area: 'Kitchen', tv: true, phone: false, whiteBoard: false, seats: 24, zoom: true},
+    {name: 'Buena Vista', area: 'Kitchen', tv: true, phone: false, whiteBoard: true, seats: 6, zoom: true},
+    {name: 'Carbondale', area: 'Kitchen', tv: true, phone: false, whiteBoard: true, seats: 6, zoom: true},
+    {name: 'Castle Rock', area: 'Coffee Shop', tv: true, phone: true, whiteBoard: false, seats: 10, zoom: true},
+    {name: 'Crested Butte', area: 'Coffee Shop', tv: true, phone: false, whiteBoard: true, seats: 14, zoom: true},
+    {name: 'Estes Park', area: 'Coffee Shop', tv: true, phone: true, whiteBoard: true, seats: 10, zoom: true},
+    {name: 'Frisco', area: 'Arcade', tv: true, phone: true, whiteBoard: false, seats: 12, zoom: true},
+    {name: 'Gunnison', area: 'Arcade', tv: true, phone: false, whiteBoard: false, seats: 8, zoom: true},
+    {name: 'Leadville', area: 'Grove', tv: true, phone: true, whiteBoard: true, seats: 10, zoom: true},
+    {name: 'Lyons', area: 'Grove', tv: true, phone: false, whiteBoard: false, seats: 6, zoom: false},
+    {name: 'Morrison', area: 'Grove', tv: true, phone: false, whiteBoard: true, seats: 20, zoom: true},
+    {name: 'Palisade', area: 'Grove', tv: false, phone: false, whiteBoard: true, seats: 2, zoom: false},
+    {name: 'Silverthorne', area: 'Grove', tv: false, phone: false, whiteBoard: true, seats: 5, zoom: false},
+    {name: 'Steamboat Springs', area: 'Grove', tv: true, phone: false, whiteBoard: false, seats: 4, zoom: false},
+    {name: 'Telluride', area: 'Grove', tv: true, phone: false, whiteBoard: true, seats: 10, zoom: true},
+    {name: 'Yuma', area: 'Grove', tv: false, phone: false, whiteBoard: false, seats: 2, zoom: false}
+]
+
+
 export default class HomeScreen extends React.Component {
     static navigationOptions = {
         header: null,
@@ -22,6 +52,8 @@ export default class HomeScreen extends React.Component {
         this.state={isShowingText: true, seatCount: 0, PhoneChecked: false, TVChecked: false,
             WhiteBoardChecked: false, Zoom: false}
     }
+
+
     PhoneCheckedChange = () => {
         this.setState({PhoneChecked : !this.state.PhoneChecked})
     }
@@ -33,11 +65,45 @@ export default class HomeScreen extends React.Component {
     }
     ZoomCheckedChange = () => {
         this.setState({ZoomChecked : !this.state.ZoomChecked})
+        if(this.state.ZoomChecked) {
+          filterKeys.Zoom = true
+        } else {
+          delete filterKeys.Zoom
+        }
+        console.log(filterKeys)
+        console.log('Zoom changed')
+    }
+
+    fullFilterFunction(room) {
+      if(this.state.PhoneChecked) {
+        if(!room.phone) {
+          return false
+        }
+      }
+        if(this.state.TVChecked) {
+            if(!room.tv) {
+                return false
+            }
+        }
+        if(this.state.WhiteBoardChecked) {
+            if(!room.whiteBoard) {
+                return false
+            }
+        }
+        if(this.state.ZoomChecked) {
+            if(!room.zoom) {
+                return false
+            }
+        }
+        if(room.seats < this.state.seatCount) {
+            return false
+        }
+        return true
     }
     render() {
         return (
             <View style={styles.container}>
-              <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+              <ScrollView  contentContainerStyle={styles.contentContainer}>
                 <View style={styles.welcomeContainer}>
                   <Image
                       source={
@@ -50,57 +116,89 @@ export default class HomeScreen extends React.Component {
                 </View>
                 <View style={styles.getStartedContainer}>
                     {this._maybeRenderDevelopmentModeWarning()}
-                  <View style={[styles.codeHighlightContainer, styles.homeScreenFilename]}>
 
+
+                  <View style={styles.row}>
+                    <Text style={styles.getStartedText2}>How many seats needed:</Text>
+                    <TextInput
+                        style={styles.inputBox}
+                        onChangeText={(seatCount) => this.setState({seatCount})}
+                        value = {this.state.text}
+                    />
                   </View>
-                  <Text style={styles.getStartedText}>How many seats:</Text>
-                  <TextInput
-                      style={{height: 10}}
-                      onChangeText={(seatCount) => this.setState({seatCount})}
-                      value = {this.state.text}
-                  />
-                  <Text style={styles.getStartedText}>
-                    Phone:
-                  </Text>
-                  <CheckBox
-                      title='Phone:'
-                      checked={this.state.PhoneChecked}
-                      onValueChange={() => this.PhoneCheckedChange()}
-                      value={this.state.PhoneChecked}
-                  />
-                  <Text style={styles.getStartedText}>
-                    TV:
-                  </Text>
-                  <CheckBox
-                      title='TV:'
-                      checked={this.state.TVChecked}
-                      onValueChange={() => this.TVCheckedChange()}
-                      value={this.state.TVChecked}
-                  />
-                  <Text style={styles.getStartedText}>
-                    WhiteBoard:
-                  </Text>
-                  <CheckBox
-                      title='WhiteBoard:'
-                      checked={this.state.WhiteBoardChecked}
-                      onValueChange={() => this.WhiteBoardCheckedChange()}
-                      value={this.state.WhiteBoardChecked}
-                  />
-                  <Text style={styles.getStartedText}>
-                    Zoom:
-                  </Text>
-                  <CheckBox
-                      title='Zoom:'
-                      checked={this.state.ZoomChecked}
-                      onValueChange={() => this.ZoomCheckedChange()}
-                      value={this.state.ZoomChecked}
-                  />
+                  <Svg width="410" height="10">
+                    <Svg.Path d="M 35 5 L 375 5 L 375 7 L 35 7 Z" fill="#ff7134" />
+                  </Svg>
+                  <View style={styles.row}>
+                    <Text style={styles.getStartedText}>
+                      Phone:
+                    </Text>
+                    <Switch
+                        title='Phone:'
+                        thumbTintColor="#ff7134"
+                        onTintColor="#ffa781"
+                        checked={this.state.PhoneChecked}
+                        onValueChange={() => this.PhoneCheckedChange()}
+                        value={this.state.PhoneChecked}
+                    />
+                  </View>
+                  <Svg width="410" height="10">
+                    <Svg.Path d="M 35 3 L 375 3 L 375 5 L 35 5 Z" fill="#ff7134" />
+                  </Svg>
+                  <View style={styles.row}>
+                    <Text style={styles.getStartedText}>
+                      TV:
+                    </Text>
+                    <Switch
+                        title='TV:'
+                        thumbTintColor="#ff7134"
+                        onTintColor="#ffa781"
+                        checked={this.state.TVChecked}
+                        onValueChange={() => this.TVCheckedChange()}
+                        value={this.state.TVChecked}
+                    />
+                  </View>
+                  <Svg width="410" height="10">
+                    <Svg.Path d="M 35 3 L 375 3 L 375 5 L 35 5 Z" fill="#ff7134" />
+                  </Svg>
+                  <View style={styles.row}>
+                    <Text style={styles.getStartedText}>
+                      WhiteBoard:
+                    </Text>
+                    <Switch
+                        title='WhiteBoard:'
+                        thumbTintColor="#ff7134"
+                        onTintColor="#ffa781"
+                        checked={this.state.WhiteBoardChecked}
+                        onValueChange={() => this.WhiteBoardCheckedChange()}
+                        value={this.state.WhiteBoardChecked}
+                    />
+                  </View><Svg width="410" height="10">
+                  <Svg.Path d="M 35 3 L 375 3 L 375 5 L 35 5 Z" fill="#ff7134" />
+                </Svg>
+                  <View style={styles.row}>
+                    <Text style={styles.getStartedText}>
+                      Zoom:
+                    </Text>
+                    <Switch
+                        title='Zoom:'
+                        thumbTintColor="#ff7134"
+                        onTintColor="#ffa781"
+                        checked={this.state.ZoomChecked}
+                        onValueChange={() => this.ZoomCheckedChange()}
+                        value={this.state.ZoomChecked}
+                    />
+                  </View>
+
                 </View>
               </ScrollView>
-              <View style={styles.tabBarInfoContainer}>
+              <View>
                 <Text style={styles.tabBarInfoText}>Rooms available:</Text>
 
               </View>
+              <RoomList area={this.state.area} dataList={rooms.filter((room) =>
+              this.fullFilterFunction(room))}/>
+
             </View>
         );
     }
@@ -137,6 +235,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+        fontFamily: 'space-mono'
     },
     developmentModeText: {
         marginBottom: 20,
@@ -162,7 +261,7 @@ const styles = StyleSheet.create({
     },
     getStartedContainer: {
         alignItems: 'center',
-        marginHorizontal: 50,
+        flex: 1,
     },
     homeScreenFilename: {
         marginVertical: 7,
@@ -180,6 +279,7 @@ const styles = StyleSheet.create({
         color: 'rgba(96,100,109, 1)',
         lineHeight: 24,
         textAlign: 'center',
+        paddingTop: 3
     },
     tabBarInfoContainer: {
         position: 'absolute',
@@ -220,4 +320,37 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#2e78b7',
     },
+    row: {
+        display: 'flex',
+        flex: 1,
+        width: '100%',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    inputBox: {
+        top: 5,
+        borderWidth: 2,
+        borderRadius: 2,
+        borderColor: '#727278',
+        height: 19,
+        fontFamily: 'space-mono',
+        textAlign: 'center',
+        marginRight: 15
+
+    },
+    getStartedText2: {
+        fontSize: 17,
+        color: 'rgba(96,100,109, 1)',
+        lineHeight: 24,
+        textAlign: 'center',
+        paddingTop: 0
+    },
+    checkBoxStyle: {
+      backgroundColor: '#2e78b7',
+      borderColor: '#2e78b7'
+    },
+
 });
+const filterKeys = {
+
+}
